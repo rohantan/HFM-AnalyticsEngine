@@ -250,10 +250,10 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 			try {
 				jo.put("deviceName", deviceName);
 				jo.put("interfaceName", interfaceName);
-				jo.put("Current", statusInfo.get(1));
-				jo.put("Maximum", statusInfo.get(2));
-				jo.put("Minimum", statusInfo.get(3));
-				jo.put("Average", statusInfo.get(4));
+				jo.put("current", statusInfo.get(1));
+				jo.put("maximum", statusInfo.get(2));
+				jo.put("minimum", statusInfo.get(3));
+				jo.put("average", statusInfo.get(4));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

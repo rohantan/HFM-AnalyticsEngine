@@ -7,7 +7,7 @@ import javax.ws.rs.PathParam;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-@Path("ae")
+@Path("/")
 public class RestAPI {
 
 	@GET

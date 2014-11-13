@@ -26,14 +26,36 @@ public class RestAPI {
 	}
 
 	@GET
-	@Path("/device/{deviceId}/interface/{interfaceId}/stats/queue")
-	public String fetchInterfaceQueueStats(@PathParam ("deviceId") int deviceId, @PathParam ("interfaceId") int interfaceId) throws JSONException{
-		JavaQueueReceiver.deviceMapping.get(deviceId);
-		JavaQueueReceiver.interfaceMapping.get(interfaceId);
-		JSONObject jo = new JSONObject();
-		jo.put("deviceName", JavaQueueReceiver.deviceMapping.get(deviceId));
-		jo.put("interfaceName", JavaQueueReceiver.interfaceMapping.get(interfaceId));
-		return jo.toString();
+	@Path("/device")
+	public String fetchDeviceInfo(@QueryParam ("deviceName") String deviceName) throws JSONException{
+		return JavaQueueReceiver.getDeviceInfo(deviceName);
+	}
+	
+	@GET
+	@Path("/device/interface")
+	public String fetchInterfaceInfo(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
+		return JavaQueueReceiver.getInterfaceInfo(interfaceName);
+	}
+	
+
+	@GET
+	@Path("/devices")
+	public String fetchDevices() throws JSONException{
+		return JavaQueueReceiver.getDevices();
+	}
+	
+	@GET
+	@Path("/device/interfaces")
+	public String fetchInterfaces(@QueryParam ("deviceName") String deviceName) throws JSONException{
+		return JavaQueueReceiver.getInterfaces(deviceName);
+	}
+	
+	
+	@GET
+	@Path("/device/interface/stats/queue")
+	public String fetchInterfaceQueueStats(@QueryParam ("deviceName") String deviceName, @QueryParam ("interfaceName") String interfaceName){
+		interfaceName = interfaceName.replaceAll("\\\\", "");
+		return JavaQueueReceiver.getInterfaceQueueStatsInfo(deviceName, interfaceName);
 	}
 
 	@GET

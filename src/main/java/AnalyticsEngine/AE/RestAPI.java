@@ -2,16 +2,38 @@ package AnalyticsEngine.AE;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 @Path("ae")
 public class RestAPI {
 
-@GET
+	@GET
 	@Path("/test")
 	public String CheckService(){
-		
+		JavaQueueReceiver.startServer();
 		return "Hi";
 	}
+
+	@GET
+	@Path("/device/{deviceId}/interface/{interfaceId}/stats/queue")
+	public String fetchInterfaceQueueStats(@PathParam ("deviceId") int deviceId, @PathParam ("interfaceId") int interfaceId) throws JSONException{
+		JavaQueueReceiver.deviceMapping.get(deviceId);
+		JavaQueueReceiver.interfaceMapping.get(interfaceId);
+		JSONObject jo = new JSONObject();
+		jo.put("deviceName", JavaQueueReceiver.deviceMapping.get(deviceId));
+		jo.put("interfaceName", JavaQueueReceiver.interfaceMapping.get(interfaceId));
+		return jo.toString();
+	}
+
+	@GET
+	@Path("/interface/stats/queue/{interfaceId}")
+	public String fetchInterfaceTrafficStats(@PathParam ("interfaceId") int interfaceId){
+		return ""+interfaceId;
+	}
+
 /*
 	@GET
 	@Path("/check/{values}")

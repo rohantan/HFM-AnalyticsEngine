@@ -1,7 +1,7 @@
 package AnalyticsEngine.AE;
 
 
-import java.io.DataInputStream;
+/*import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import analytics.Analytics.AnRecord;
 
-import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.CodedInputStream;*/
 
 
 public class SampleProtoBuf {
-	public static void main(String[] args) {
+	public static void main(String[] args) {/*
 		try {
 			Logger logger = LoggerFactory.getLogger(SampleProtoBuf.class);
 			
@@ -69,5 +69,5 @@ public class SampleProtoBuf {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+	*/}
 }

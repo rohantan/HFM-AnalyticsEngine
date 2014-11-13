@@ -11,9 +11,16 @@ import org.codehaus.jettison.json.JSONObject;
 public class RestAPI {
 
 	@GET
-	@Path("/test")
+	@Path("/startQueueServer")
 	public String CheckService(){
 		JavaQueueReceiver.startServer();
+		return "Hi";
+	}
+	
+	@GET
+	@Path("/startTrafficServer")
+	public String getTxPcktService(){
+		JavaTrafficReceiver.startServer();
 		return "Hi";
 	}
 
@@ -31,7 +38,7 @@ public class RestAPI {
 	@GET
 	@Path("/interface/stats/queue/{interfaceId}")
 	public String fetchInterfaceTrafficStats(@PathParam ("interfaceId") int interfaceId){
-		return ""+interfaceId;
+		return JavaTrafficReceiver.interfacePerTxDrpPcktHM.toString();
 	}
 
 /*
@@ -159,3 +166,4 @@ public class RestAPI {
 	}
 
 */}
+

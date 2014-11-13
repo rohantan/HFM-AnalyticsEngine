@@ -203,12 +203,13 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static String getDevices() {
 		JSONObject jo = new JSONObject();
 		Iterator<Entry<String, System>> it = deviceInfo.entrySet().iterator();
-		int i = 0;
+		ArrayList<String> devices = new ArrayList<String>();
 		try {
 			while (it.hasNext()) {
 		        Map.Entry<String, System> pairs = (Map.Entry<String, Analytics.System>)it.next();
-		        jo.put("" + i++, pairs.getKey());
+		        devices.add(pairs.getKey());
 			}
+			jo.put("devices", devices);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -224,12 +225,13 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static String getInterfaces(String deviceName) {
 		JSONObject jo = new JSONObject();
 		Iterator<Entry<String, Interface>> it = interfaceInfo.entrySet().iterator();
-		int i = 0;
+		ArrayList<String> interfaces = new ArrayList<String>();
 		try {
 			while (it.hasNext()) {
 		        Map.Entry<String, Interface> pairs = (Map.Entry<String, Interface>)it.next();
-		        jo.put(""+i++, pairs.getKey());
+		        interfaces.add(pairs.getKey());
 			}
+			jo.put("interfaces", interfaces);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

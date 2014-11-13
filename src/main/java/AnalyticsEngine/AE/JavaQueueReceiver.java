@@ -7,13 +7,10 @@ import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -27,8 +24,9 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
-import org.apache.spark.streaming.dstream.DStream;
 import org.apache.spark.streaming.receiver.Receiver;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +34,9 @@ import scala.Tuple2;
 import analytics.Analytics;
 import analytics.Analytics.AnRecord;
 import analytics.Analytics.Interface;
+import analytics.Analytics.System;
+
+import com.googlecode.protobuf.format.JsonFormat;
 
 public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static final Logger logger = LoggerFactory.getLogger(JavaQueueReceiver.class);
@@ -43,10 +44,12 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static HashMap<String, Analytics.System> deviceInfo = new HashMap<String, Analytics.System>();
 	public static HashMap<String, Interface> interfaceInfo = new HashMap<String, Interface>();
 	static HashMap<String, ArrayList<Long>> interfaceQueueStats = new HashMap<String, ArrayList<Long>>();
-	static ArrayList<String> deviceMapping = new ArrayList<String>();
-	static ArrayList<String> interfaceMapping = new ArrayList<String>();
+	public static HashMap<String, HashMap<Integer, Long>> interfaceQueueStatsInfo = new HashMap<String, HashMap<Integer, Long>>();
 	
-		
+	public static void main(String[] args) {
+		startServer();
+	}
+	
 	public static void startServer() {
 		// Create a local StreamingContext with two working thread and batch interval of 1 second
 		SparkConf conf = new SparkConf().setMaster("local[2]").setAppName("JavaQueueReceiver");
@@ -70,6 +73,12 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 							statsPerInterface.add(interface1.getName() +"," + stats);
 						}
 						logger.warn("Current status :" + interface1.getName() + ": " + interface1.getStats().getQueueStats().getQueueDepth());
+						
+						HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(interface1.getName());
+						if(stats == null) 
+							stats = new HashMap<Integer, Long>();
+						stats.put(1,interface1.getStats().getQueueStats().getQueueDepth());
+						interfaceQueueStatsInfo.put(interface1.getName(), stats);
 					}
 					//logger.warn("Current status : " + x.getInterface(0).getName() + " : " + (x.getInterface(0).getStats().getQueueStats().getQueueDepth() / (interfaceInfo.get(x.getInterface(0).getName()).getStatus().getLink().getSpeed() * 1.0)));
 					
@@ -105,6 +114,12 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 					for (Tuple2<String, Long> t: rdd.collect()) {
 			        	//logger.warn("Maximum status :" + t._1() + ": " + (t._2() / (interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0)));
 						logger.warn("Maximum status :" + t._1() + ": " + t._2());
+						HashMap<String, Long> data = new HashMap<String, Long>();
+						HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
+						if(stats == null) 
+							stats = new HashMap<Integer, Long>();
+						stats.put(2,t._2());
+						interfaceQueueStatsInfo.put(t._1(), stats);
 			        }
 			        return null;
 				}
@@ -131,6 +146,11 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 					for (Tuple2<String, Long> t: rdd.collect()) {
 						//logger.warn("Minimum status :" + t._1() + ": " + (t._2() / (interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0)));
 			        	logger.warn("Minimum status :" + t._1() + ": " + t._2());
+			        	HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
+						if(stats == null) 
+							stats = new HashMap<Integer, Long>();
+						stats.put(3, t._2());
+						interfaceQueueStatsInfo.put(t._1(), stats);
 			        }
 			        return null;
 				}
@@ -151,6 +171,11 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 			        for (Tuple2<String, Long> t: rdd.collect()) {
 			        	//logger.warn("Average status :" + t._1() + ": " + (t._2() / (interfaceQueueStats.get(t._1()).size() * interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0)));
 			        	logger.warn("Average status :" + t._1() + ": " + (t._2() / (interfaceQueueStats.get(t._1()).size())));
+			        	HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
+						if(stats == null) 
+							stats = new HashMap<Integer, Long>();
+						stats.put(4, (t._2() / (interfaceQueueStats.get(t._1()).size())));
+						interfaceQueueStatsInfo.put(t._1(), stats);
 			        }
 			        return null;
 				}
@@ -175,6 +200,65 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		jssc.awaitTermination();
 	}
 
+	public static String getDevices() {
+		JSONObject jo = new JSONObject();
+		Iterator<Entry<String, System>> it = deviceInfo.entrySet().iterator();
+		try {
+			while (it.hasNext()) {
+		        Map.Entry<String, System> pairs = (Map.Entry<String, Analytics.System>)it.next();
+		        jo.put(pairs.getKey(), pairs.getKey());
+				
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+	
+	public static String getDeviceInfo(String deviceName) {
+		return JsonFormat.printToString(deviceInfo.get(deviceName));
+		
+	}
+	
+	public static String getInterfaces(String deviceName) {
+		JSONObject jo = new JSONObject();
+		Iterator<Entry<String, Interface>> it = interfaceInfo.entrySet().iterator();
+		try {
+			while (it.hasNext()) {
+		        Map.Entry<String, Interface> pairs = (Map.Entry<String, Interface>)it.next();
+		        jo.put(pairs.getKey(), pairs.getKey());
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+	
+	public static String getInterfaceInfo(String interfaceName) {
+		return JsonFormat.printToString(interfaceInfo.get(interfaceName));
+	}
+	
+	public static String getInterfaceQueueStatsInfo(String deviceName, String interfaceName) {
+		JSONObject jo = new JSONObject();
+		HashMap<Integer, Long> statusInfo = interfaceQueueStatsInfo.get(interfaceName);
+		if(statusInfo != null) {
+			try {
+				jo.put("deviceName", deviceName);
+				jo.put("interfaceName", interfaceName);
+				jo.put("Current", statusInfo.get(1));
+				jo.put("Maximum", statusInfo.get(2));
+				jo.put("Minimum", statusInfo.get(3));
+				jo.put("Average", statusInfo.get(4));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return jo.toString();
+	}
+	
 	// ============= Receiver code that receives data over a socket ==============
 
 	String host = null;
@@ -245,13 +329,11 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 							// Store the device information.
 							Analytics.System system = anRecord.getSystem();
 							deviceInfo.put(system.getName(), system);
-							deviceMapping.add(system.getName());
 						} else {
 							//logger.warn("In interface information");
 							// Store the interface information
 							for (Interface interface1 : anRecord.getInterfaceList()) {
 								interfaceInfo.put(interface1.getName(), interface1);
-								interfaceMapping.add(interface1.getName());
 							}
 						}	
 					}

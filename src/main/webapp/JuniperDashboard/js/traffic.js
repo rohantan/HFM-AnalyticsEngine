@@ -5,10 +5,10 @@ $(document).ready(function () {
 	var url = globalurl+"devices";
 	//alert(url);
 	var i=0;
-
+	
 	function getDropPackets(interfaceName)
 	{
-		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName="+interfaceName;
+		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName = "+interfaceName;
 		//alert("In getDropPackets"+url);
 		intervalId1 = setInterval(function(){
 			$.ajax({

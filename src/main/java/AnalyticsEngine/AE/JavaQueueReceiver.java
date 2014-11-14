@@ -7,8 +7,10 @@ import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,6 +38,7 @@ import analytics.Analytics.AnRecord;
 import analytics.Analytics.Interface;
 import analytics.Analytics.System;
 
+import com.google.protobuf.ProtocolStringList;
 import com.googlecode.protobuf.format.JsonFormat;
 
 public class JavaQueueReceiver extends Receiver<AnRecord> {
@@ -45,6 +48,8 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static HashMap<String, Interface> interfaceInfo = new HashMap<String, Interface>();
 	static HashMap<String, ArrayList<Long>> interfaceQueueStats = new HashMap<String, ArrayList<Long>>();
 	public static HashMap<String, HashMap<Integer, Long>> interfaceQueueStatsInfo = new HashMap<String, HashMap<Integer, Long>>();
+	public static HashMap<String, ArrayList<Long>> interfaceQueueStatsChart1 = new HashMap<String, ArrayList<Long>>();
+	
 	
 	public static void main(String[] args) {
 		startServer();
@@ -176,6 +181,14 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 							stats = new HashMap<Integer, Long>();
 						stats.put(4, (t._2() / (interfaceQueueStats.get(t._1()).size())));
 						interfaceQueueStatsInfo.put(t._1(), stats);
+						// Code for displaying chart 1.
+						ArrayList<Long> avgStats = interfaceQueueStatsChart1.get(t._1());
+						if(avgStats == null) 
+							avgStats = new ArrayList<Long>();
+						if(avgStats.size() == 300)
+							avgStats.remove(0);
+						avgStats.add((t._2() / (interfaceQueueStats.get(t._1()).size())));
+						interfaceQueueStatsChart1.put(t._1(), avgStats);
 			        }
 			        return null;
 				}
@@ -224,14 +237,9 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	
 	public static String getInterfaces(String deviceName) {
 		JSONObject jo = new JSONObject();
-		Iterator<Entry<String, Interface>> it = interfaceInfo.entrySet().iterator();
-		ArrayList<String> interfaces = new ArrayList<String>();
+		List<String> interfacesList = deviceInfo.get(deviceName).getInformation().getInterfaceListList();
 		try {
-			while (it.hasNext()) {
-		        Map.Entry<String, Interface> pairs = (Map.Entry<String, Interface>)it.next();
-		        interfaces.add(pairs.getKey());
-			}
-			jo.put("interfaces", interfaces);
+			jo.put("interfaces", interfacesList);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -240,7 +248,30 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	}
 	
 	public static String getInterfaceInfo(String interfaceName) {
-		return JsonFormat.printToString(interfaceInfo.get(interfaceName));
+		Interface interface1 = interfaceInfo.get(interfaceName);
+		if(interface1 != null) {
+			return JsonFormat.printToString(interface1);
+		}
+		return "";
+	}
+	
+	public static String getInterfaceQueueStatsChart1(String deviceName, String interfaceName) {
+		JSONObject jo = new JSONObject();
+		ArrayList<Long> stats = new ArrayList<Long>();
+		ArrayList<Long> currStats = interfaceQueueStatsChart1.get(interfaceName);
+		if(currStats != null) {
+			stats.addAll(currStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("queueStats", stats);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jo.toString();
 	}
 	
 	public static String getInterfaceQueueStatsInfo(String deviceName, String interfaceName) {

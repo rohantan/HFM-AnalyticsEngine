@@ -34,6 +34,7 @@ public class RestAPI {
 	@GET
 	@Path("/device/interface")
 	public String fetchInterfaceInfo(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
+		interfaceName = interfaceName.replaceAll("\\\\", "");
 		return JavaQueueReceiver.getInterfaceInfo(interfaceName);
 	}
 	
@@ -56,6 +57,13 @@ public class RestAPI {
 	public String fetchInterfaceQueueStats(@QueryParam ("deviceName") String deviceName, @QueryParam ("interfaceName") String interfaceName){
 		interfaceName = interfaceName.replaceAll("\\\\", "");
 		return JavaQueueReceiver.getInterfaceQueueStatsInfo(deviceName, interfaceName);
+	}
+	
+	@GET
+	@Path("/device/interface/stats/queue/chart1")
+	public String fetchInterfaceQueueStatsChart1(@QueryParam ("deviceName") String deviceName, @QueryParam ("interfaceName") String interfaceName){
+		interfaceName = interfaceName.replaceAll("\\\\", "");
+		return JavaQueueReceiver.getInterfaceQueueStatsChart1(deviceName, interfaceName);
 	}
 
 	@GET

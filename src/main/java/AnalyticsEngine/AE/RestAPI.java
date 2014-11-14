@@ -149,7 +149,7 @@ public class RestAPI {
 		JSONObject jo = new JSONObject();
 		jo.put("interfaceTxPckts", JavaTrafficReceiver.getInterfacePerTxPktsHM(interfaceName));
 		jo.put("interfaceRxPckts", JavaTrafficReceiver.getInterfacePerRxPktsHM(interfaceName));
-		return JavaTrafficReceiver.getInterfaceTxbpsHM(interfaceName);
+		return jo.toString();
 	}
 
 	@GET

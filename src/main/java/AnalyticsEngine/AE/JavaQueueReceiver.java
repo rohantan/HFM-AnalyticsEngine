@@ -49,6 +49,7 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static HashMap<String, HashMap<Integer, Double>> interfaceLatencyStatsInfo = new HashMap<String, HashMap<Integer, Double>>();
 	
 	public static HashMap<String, ArrayList<Long>> interfaceQueueStatsChart1 = new HashMap<String, ArrayList<Long>>();
+	public static HashMap<String, ArrayList<Long>> interfaceQueueAvgStatsChart1 = new HashMap<String, ArrayList<Long>>();
 	public static HashMap<String, ArrayList<Double>> interfaceLatencyStatsChart1 = new HashMap<String, ArrayList<Double>>();
 	
 	
@@ -219,6 +220,16 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						latStats.put(4, calculateDelay(t._2(),interfaceInfo.get(t._1()).getStatus().getLink().getSpeed()));
 						interfaceQueueStatsInfo.put(t._1(), stats);
 						interfaceLatencyStatsInfo.put(t._1(), latStats);
+						
+						// Code for displaying chart 3.
+						ArrayList<Long> avgStats = interfaceQueueAvgStatsChart1.get(t._1());
+						if(avgStats == null) 
+							avgStats = new ArrayList<Long>();
+						if(avgStats.size() == 300)
+							avgStats.remove(0);
+						avgStats.add((t._2() / (interfaceQueueStats.get(t._1()).size())));
+						interfaceQueueAvgStatsChart1.put(t._1(), avgStats);
+						
 			        }
 			        return null;
 				}
@@ -298,7 +309,10 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static String getInterfaceQueueStatsChart1(String deviceName, String interfaceName) {
 		JSONObject jo = new JSONObject();
 		ArrayList<Long> stats = new ArrayList<Long>();
+		
 		ArrayList<Long> currStats = interfaceQueueStatsChart1.get(interfaceName);
+		ArrayList<Long> avgStats = interfaceQueueAvgStatsChart1.get(interfaceName);
+		
 		if(currStats != null) {
 			stats.addAll(currStats);
 			for(int i=stats.size();i<300;i++) {
@@ -307,6 +321,19 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		}
 		try {
 			jo.put("queueStats", stats);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		stats = new ArrayList<Long>();
+		if(avgStats != null) {
+			stats.addAll(avgStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("queueAvgStats", stats);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

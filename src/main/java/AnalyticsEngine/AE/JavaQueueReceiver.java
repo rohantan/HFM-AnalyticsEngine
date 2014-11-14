@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -37,6 +38,7 @@ import analytics.Analytics.AnRecord;
 import analytics.Analytics.Interface;
 import analytics.Analytics.System;
 
+import com.google.protobuf.ProtocolStringList;
 import com.googlecode.protobuf.format.JsonFormat;
 
 public class JavaQueueReceiver extends Receiver<AnRecord> {
@@ -235,14 +237,9 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	
 	public static String getInterfaces(String deviceName) {
 		JSONObject jo = new JSONObject();
-		Iterator<Entry<String, Interface>> it = interfaceInfo.entrySet().iterator();
-		ArrayList<String> interfaces = new ArrayList<String>();
+		List<String> interfacesList = deviceInfo.get(deviceName).getInformation().getInterfaceListList();
 		try {
-			while (it.hasNext()) {
-		        Map.Entry<String, Interface> pairs = (Map.Entry<String, Interface>)it.next();
-		        interfaces.add(pairs.getKey());
-			}
-			jo.put("interfaces", interfaces);
+			jo.put("interfaces", interfacesList);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

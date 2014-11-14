@@ -49,6 +49,7 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static HashMap<String, HashMap<Integer, Double>> interfaceLatencyStatsInfo = new HashMap<String, HashMap<Integer, Double>>();
 	
 	public static HashMap<String, ArrayList<Long>> interfaceQueueStatsChart1 = new HashMap<String, ArrayList<Long>>();
+	public static HashMap<String, ArrayList<Double>> interfaceLatencyStatsChart1 = new HashMap<String, ArrayList<Double>>();
 	
 	
 	public static void main(String[] args) {
@@ -80,10 +81,33 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						logger.warn("Current status :" + interface1.getName() + ": " + interface1.getStats().getQueueStats().getQueueDepth());
 						
 						HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(interface1.getName());
-						if(stats == null) 
+						HashMap<Integer, Double> latStats = interfaceLatencyStatsInfo.get(interface1.getName());
+						if(stats == null) {
 							stats = new HashMap<Integer, Long>();
+							latStats = new HashMap<Integer, Double>();
+						}
 						stats.put(1,interface1.getStats().getQueueStats().getQueueDepth());
+						latStats.put(1, calculateDelay(interface1.getStats().getQueueStats().getQueueDepth(), interfaceInfo.get(interface1.getName()).getStatus().getLink().getSpeed()));
 						interfaceQueueStatsInfo.put(interface1.getName(), stats);
+						interfaceLatencyStatsInfo.put(interface1.getName(), latStats);
+						
+						// Code for displaying chart 1.
+						ArrayList<Long> curStats = interfaceQueueStatsChart1.get(interface1.getName());
+						if(curStats == null) 
+							curStats = new ArrayList<Long>();
+						if(curStats.size() == 300)
+							curStats.remove(0);
+						curStats.add(interface1.getStats().getQueueStats().getQueueDepth());
+						interfaceQueueStatsChart1.put(interface1.getName(), curStats);
+						
+						// Code for displaying chart 1.
+						ArrayList<Double> curLatStats = interfaceLatencyStatsChart1.get(interface1.getName());
+						if(curLatStats == null) 
+							curLatStats = new ArrayList<Double>();
+						if(curLatStats.size() == 300)
+							curLatStats.remove(0);
+						curLatStats.add(calculateDelay(interface1.getStats().getQueueStats().getQueueDepth(), interfaceInfo.get(interface1.getName()).getStatus().getLink().getSpeed()));
+						interfaceLatencyStatsChart1.put(interface1.getName(), curLatStats);
 					}
 					//logger.warn("Current status : " + x.getInterface(0).getName() + " : " + (x.getInterface(0).getStats().getQueueStats().getQueueDepth() / (interfaceInfo.get(x.getInterface(0).getName()).getStatus().getLink().getSpeed() * 1.0)));
 					
@@ -124,12 +148,12 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						HashMap<Integer, Double> latStats = interfaceLatencyStatsInfo.get(t._1());
 						if(stats == null) {
 							stats = new HashMap<Integer, Long>();
-							//latStats = new HashMap<Integer, Long>();
+							latStats = new HashMap<Integer, Double>();
 						}
 						stats.put(2,t._2());
-						//latStats.put(2, value);
+						latStats.put(2, calculateDelay(t._2(),interfaceInfo.get(t._1()).getStatus().getLink().getSpeed()));
 						interfaceQueueStatsInfo.put(t._1(), stats);
-						//interfaceLatencyStatsInfo.put(t._1(), )
+						interfaceLatencyStatsInfo.put(t._1(), latStats);
 			        }
 			        return null;
 				}
@@ -157,10 +181,15 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						//logger.warn("Minimum status :" + t._1() + ": " + (t._2() / (interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0)));
 			        	logger.warn("Minimum status :" + t._1() + ": " + t._2());
 			        	HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
-						if(stats == null) 
+			        	HashMap<Integer, Double> latStats = interfaceLatencyStatsInfo.get(t._1());
+						if(stats == null) {
 							stats = new HashMap<Integer, Long>();
+							latStats = new HashMap<Integer, Double>();
+						}
 						stats.put(3, t._2());
+						latStats.put(3, calculateDelay(t._2(),interfaceInfo.get(t._1()).getStatus().getLink().getSpeed()));
 						interfaceQueueStatsInfo.put(t._1(), stats);
+						interfaceLatencyStatsInfo.put(t._1(), latStats);
 			        }
 			        return null;
 				}
@@ -182,18 +211,14 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 			        	//logger.warn("Average status :" + t._1() + ": " + (t._2() / (interfaceQueueStats.get(t._1()).size() * interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0)));
 			        	logger.warn("Average status :" + t._1() + ": " + (t._2() / (interfaceQueueStats.get(t._1()).size())));
 			        	HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
-						if(stats == null) 
+			        	HashMap<Integer, Double> latStats = interfaceLatencyStatsInfo.get(t._1());
+						if(stats == null) {
 							stats = new HashMap<Integer, Long>();
+						}
 						stats.put(4, (t._2() / (interfaceQueueStats.get(t._1()).size())));
+						latStats.put(4, calculateDelay(t._2(),interfaceInfo.get(t._1()).getStatus().getLink().getSpeed()));
 						interfaceQueueStatsInfo.put(t._1(), stats);
-						// Code for displaying chart 1.
-						ArrayList<Long> avgStats = interfaceQueueStatsChart1.get(t._1());
-						if(avgStats == null) 
-							avgStats = new ArrayList<Long>();
-						if(avgStats.size() == 300)
-							avgStats.remove(0);
-						avgStats.add((t._2() / (interfaceQueueStats.get(t._1()).size())));
-						interfaceQueueStatsChart1.put(t._1(), avgStats);
+						interfaceLatencyStatsInfo.put(t._1(), latStats);
 			        }
 			        return null;
 				}
@@ -218,9 +243,9 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		jssc.awaitTermination();
 	}
 
-	/*double calculateDelay(Long depth, Long speed) {
-		(depth *  8) / (interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0))
-	}*/
+	static double calculateDelay(Long depth, Long speed) {
+		return (depth *  8.0 * 1000000) / (speed * 1.0);
+	}
 	
 	public static String getDevices() {
 		JSONObject jo = new JSONObject();
@@ -289,6 +314,25 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		return jo.toString();
 	}
 	
+	public static String getInterfaceLatencyStatsChart1(String deviceName, String interfaceName) {
+		JSONObject jo = new JSONObject();
+		ArrayList<Double> stats = new ArrayList<Double>();
+		ArrayList<Double> currStats = interfaceLatencyStatsChart1.get(interfaceName);
+		if(currStats != null) {
+			stats.addAll(currStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0.0);
+			}
+		}
+		try {
+			jo.put("queueStats", stats);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+	
 	public static String getInterfaceQueueStatsInfo(String deviceName, String interfaceName) {
 		JSONObject jo = new JSONObject();
 		HashMap<Integer, Long> statusInfo = interfaceQueueStatsInfo.get(interfaceName);
@@ -307,6 +351,27 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		}
 		return jo.toString();
 	}
+	
+	public static String getInterfaceLatencyStatsInfo(String deviceName, String interfaceName) {
+		JSONObject jo = new JSONObject();
+		HashMap<Integer, Double> statusInfo = interfaceLatencyStatsInfo.get(interfaceName);
+		if(statusInfo != null) {
+			try {
+				jo.put("deviceName", deviceName);
+				jo.put("interfaceName", interfaceName);
+				jo.put("Current", statusInfo.get(1));
+				jo.put("Maximum", statusInfo.get(2));
+				jo.put("Minimum", statusInfo.get(3));
+				jo.put("Average", statusInfo.get(4));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return jo.toString();
+	}
+	
+	
 	
 	// ============= Receiver code that receives data over a socket ==============
 

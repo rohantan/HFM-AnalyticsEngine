@@ -328,7 +328,7 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		JavaStreamingContext jssc = new JavaStreamingContext(conf, new Duration(5000));
 		JavaReceiverInputDStream<AnRecord> lines = jssc.receiverStream(
 				new JavaTrafficReceiver("127.0.0.1", 50006));
-		JavaDStream<String> words = lines.flatMap(new FlatMapFunction<AnRecord, String>() {
+		JavaDStream<String> words1 = lines.flatMap(new FlatMapFunction<AnRecord, String>() {
 			public Iterable<String> call(AnRecord a) {
 				if(flag){
 					flag=false;
@@ -347,8 +347,6 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 									interfaceTxPcktDrpHM.put(a.getInterface(i).getName(), tempTxLs);
 									tempRxLs.add(a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
 									interfaceRxPcktDrpHM.put(a.getInterface(i).getName(), tempRxLs);
-
-
 
 									List<Long> tempTxPpsLs=interfaceTxPpsHM.get(a.getInterface(i).getName());
 									List<Long> tempRxPpsLs=interfaceRxPpsHM.get(a.getInterface(i).getName());
@@ -390,6 +388,37 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 									tempRxCrcErrLs.add(a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 									interfaceRxCrcErrHM.put(a.getInterface(i).getName(), tempRxCrcErrLs);
 
+									/*val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxbps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxbps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());*/
+								}
+							}
+						}
+						return val;
+//						return null;
+					}
+				}
+				return null;
+			}
+		});
+		words1.print();
+		////////////////////////
+		
+		
+		JavaDStream<String> words = lines.flatMap(new FlatMapFunction<AnRecord, String>() {
+			public Iterable<String> call(AnRecord a) {
+					if(a.getInterfaceCount()>0){
+						List<String> val= new ArrayList<String>();
+						for(int i=0;i<a.getInterfaceCount();i++){
+							if(a.getInterface(i).hasStats()){
+								if(a.getInterface(i).getStats().getTrafficStats().hasTxdroppkt()){
+
 									val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"
 											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt()+";"
 											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpps()+";"
@@ -404,10 +433,12 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 						}
 						return val;
 					}
-				}
 				return null;
 			}
 		});
+		
+		
+		////////////////////////
 
 		//map-reduce for TxDropPkt
 		JavaPairDStream<String, Long> TxDropPktsCounts = words.mapToPair(

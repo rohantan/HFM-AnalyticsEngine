@@ -7,7 +7,6 @@ import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +37,6 @@ import analytics.Analytics.AnRecord;
 import analytics.Analytics.Interface;
 import analytics.Analytics.System;
 
-import com.google.protobuf.ProtocolStringList;
 import com.googlecode.protobuf.format.JsonFormat;
 
 public class JavaQueueReceiver extends Receiver<AnRecord> {
@@ -238,11 +236,13 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static String getInterfaces(String deviceName) {
 		JSONObject jo = new JSONObject();
 		List<String> interfacesList = deviceInfo.get(deviceName).getInformation().getInterfaceListList();
-		try {
-			jo.put("interfaces", interfacesList);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(interfacesList != null) {
+			try {
+				jo.put("interfaces", deviceName+":"+interfacesList);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return jo.toString();
 	}

@@ -82,14 +82,13 @@ public class RestAPI {
 		return jo.toString();
 	}
 	
-	//TODO
 	@GET
 	@Path("/interface/stats/traffic/totalpktdrop")
 	public String fetchInterfaceTrafficStatTotalPktDrop(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
 		interfaceName=interfaceName.replaceAll("\\\\", "");
 		JSONObject jo = new JSONObject();
-		jo.put("interfaceTxTotalDrpPckt", JavaTrafficReceiver.getInterfacePerTxDrpPcktHM(interfaceName));
-		jo.put("interfaceRxTotalDrpPckt", JavaTrafficReceiver.getInterfacePerRxDrpPcktHM(interfaceName));
+		jo.put("interfaceTxTotalDrpPckt", JavaTrafficReceiver.getInterfacePerTxTotalDrpPktHM(interfaceName));
+		jo.put("interfaceRxTotalDrpPckt", JavaTrafficReceiver.getInterfacePerRxTotalDrpPktHM(interfaceName));
 		return jo.toString();
 	}
 	

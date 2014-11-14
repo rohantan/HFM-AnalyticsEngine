@@ -46,6 +46,8 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static HashMap<String, Interface> interfaceInfo = new HashMap<String, Interface>();
 	static HashMap<String, ArrayList<Long>> interfaceQueueStats = new HashMap<String, ArrayList<Long>>();
 	public static HashMap<String, HashMap<Integer, Long>> interfaceQueueStatsInfo = new HashMap<String, HashMap<Integer, Long>>();
+	public static HashMap<String, HashMap<Integer, Double>> interfaceLatencyStatsInfo = new HashMap<String, HashMap<Integer, Double>>();
+	
 	public static HashMap<String, ArrayList<Long>> interfaceQueueStatsChart1 = new HashMap<String, ArrayList<Long>>();
 	
 	
@@ -119,10 +121,15 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						logger.warn("Maximum status :" + t._1() + ": " + t._2());
 						HashMap<String, Long> data = new HashMap<String, Long>();
 						HashMap<Integer, Long> stats = interfaceQueueStatsInfo.get(t._1());
-						if(stats == null) 
+						HashMap<Integer, Double> latStats = interfaceLatencyStatsInfo.get(t._1());
+						if(stats == null) {
 							stats = new HashMap<Integer, Long>();
+							//latStats = new HashMap<Integer, Long>();
+						}
 						stats.put(2,t._2());
+						//latStats.put(2, value);
 						interfaceQueueStatsInfo.put(t._1(), stats);
+						//interfaceLatencyStatsInfo.put(t._1(), )
 			        }
 			        return null;
 				}
@@ -211,6 +218,10 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		jssc.awaitTermination();
 	}
 
+	/*double calculateDelay(Long depth, Long speed) {
+		(depth *  8) / (interfaceInfo.get(t._1()).getStatus().getLink().getSpeed() * 1.0))
+	}*/
+	
 	public static String getDevices() {
 		JSONObject jo = new JSONObject();
 		Iterator<Entry<String, System>> it = deviceInfo.entrySet().iterator();
@@ -236,9 +247,13 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	public static String getInterfaces(String deviceName) {
 		JSONObject jo = new JSONObject();
 		List<String> interfacesList = deviceInfo.get(deviceName).getInformation().getInterfaceListList();
+		ArrayList<String> interfaces = new ArrayList<String>();
 		if(interfacesList != null) {
 			try {
-				jo.put("interfaces", deviceName+":"+interfacesList);
+				for (String string : interfacesList) {
+					interfaces.add(deviceName+":"+string);
+				}
+				jo.put("interfaces", interfaces);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

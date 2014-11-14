@@ -318,9 +318,10 @@ $(document).ready(function () {
 		var current=[];
 		if($("#stats-chart2").length)
 		{	
+			$("#stats-chart2").empty();
 			for (var i = 0; i < current1.length; i++)
 			{
-				current.push([i, current1[i]])
+				//current.push([i, current1[i]])
 				average.push([i, average1[i]]);
 			}
 			
@@ -332,15 +333,16 @@ $(document).ready(function () {
 							lineWidth: 2 
 						},
 						shadowSize: 0	
-					}, {
-						data: average,
+					}/*, {
+						data: current,
+						label: "Current",
 						bars: { show: true,
 							fill: false, 
 							barWidth: 0.1, 
 							align: "center",
-							lineWidth: 5,
+							lineWidth: 1,
 						}
-					}
+					}*/
 					], {
 
 				grid: { hoverable: true, 

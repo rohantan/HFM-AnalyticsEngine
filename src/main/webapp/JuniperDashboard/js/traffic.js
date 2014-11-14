@@ -1,15 +1,15 @@
 var globalurl ="http://localhost:8080/analyticsengine/ae/";
 var selectedInterface='';
 $(document).ready(function () {
-	var intervalId1,intervalId2,intervalId3,intervalId4;
+	var intervalId1,intervalId2,intervalId3,intervalId4,intervalId5,intervalId,intervalId7,intervalId8;
 	var url = globalurl+"devices";
-	//alert(url);
+	//alert(url);totalpktdrop
 	var i=0;
-	
+
 	function getDropPackets(interfaceName)
 	{
-		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName = "+interfaceName;
-		//alert("In getDropPackets"+url);
+		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName="+interfaceName;
+		alert("In getDropPackets"+url);
 		intervalId1 = setInterval(function(){
 			$.ajax({
 				type: "GET",
@@ -56,7 +56,7 @@ $(document).ready(function () {
 	function getTotalRxCRCError(interfaceName)
 	{
 		var url = globalurl+"interface/stats/traffic/rxtotalcrcerror?interfaceName="+interfaceName;
-
+		//alert(url);
 		intervalId3 = setInterval(function(){
 			$.ajax({
 				type: "GET",
@@ -80,71 +80,329 @@ $(document).ready(function () {
 	function generateBoxCharts(interfaceName)
 	{
 		intervalId4 = setInterval(function(){
-		url=globalurl+"interface/stats/traffic/pckts?interfaceName="+interfaceName;
-		$.ajax({
-			type: "GET",
-			url: url,
-			async:false,
-			success: function(msg){
-				var obj = jQuery.parseJSON( ''+ msg +'' );
-				$("#txpkt").html(obj.interfaceTxPckts[interfaceName]);
-				$("#rxpkt").html(obj.interfaceRxPckts[interfaceName]);
-			},
-			error: function () {
-				alert("Error");
+			url=globalurl+"interface/stats/traffic/pckts?interfaceName="+interfaceName;
+			//alert(url);
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					$("#txpkt").html(obj.interfaceTxPckts[interfaceName]);
+					$("#rxpkt").html(obj.interfaceRxPckts[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+
+			});
+
+			url=globalurl+"interface/stats/traffic/bps?interfaceName="+interfaceName;
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					$("#txbps").html(obj.interfaceTxBps[interfaceName]);
+					$("#rxbps").html(obj.interfaceRxBps[interfaceName]);
+
+				},
+				error: function () {
+					alert("Error");
+				}
+
+			});
+
+			url=globalurl+"interface/stats/traffic/pps?interfaceName="+interfaceName;
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					$("#txpps").html(obj.interfaceTxPps[interfaceName]);
+					$("#rxpps").html(obj.interfaceRxPps[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+
+			});
+
+			url=globalurl+"interface/stats/traffic/pktdrop?interfaceName="+interfaceName;
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					$("#txdroppkt").html(obj.interfaceTxDrpPckt[interfaceName]);
+					$("#rxdroppkt").html(obj.interfaceRxDrpPckt[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+
+			});}, 1000);
+	}	
+
+	var txDropData = [], ttlPoints = 300;
+	var rxDropData = [];
+	function generateTxDropChart(interfaceName)
+	{
+
+		alert("In generateTxDropChart");
+		function getTxDropData() {
+			var url = globalurl+"interface/stats/traffic/graphpktdrop?interfaceName="+interfaceName;
+			//alert("In generateTxDropChart"+url);
+			$.ajax({
+				type: "GET",
+				url: url,
+				async : false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					var html= "";
+					txDropData = obj.interfaceTxDrpPckt;
+					rxDropData = obj.interfaceRxDrpPckt;
+
+				},
+				error: function () {
+					alert("Error");
+				}
+			});
+
+			var result = [];
+
+			for (var i = 0; i < txDropData.length; ++i)
+				result.push([i, txDropData[i]])
+				return result;
+
+		}
+		if($("#txDropPcktChart").length)
+		{
+			var options = {
+					series: { shadowSize: 1 },
+					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
+					yaxis: { min: 20000000, max: 70000000 },
+					xaxis: { show: false },
+					colors: ["#B87FED"],
+					grid: {	tickColor: "#dddddd",
+						borderWidth: 0 
+					},
+			};
+			var plot = $.plot($("#txDropPcktChart"), [ getTxDropData() ], options);
+			function update() {
+				//alert("In Update");
+				plot.setData([ getTxDropData() ]);
+				// since the axes don't change, we don't need to call plot.setupGrid()
+				plot.draw();
+				setTimeout(update, updateIntervalTxDropPckt);
 			}
 
-		});
-
-		url=globalurl+"interface/stats/traffic/bps?interfaceName="+interfaceName;
-		$.ajax({
-			type: "GET",
-			url: url,
-			async:false,
-			success: function(msg){
-				var obj = jQuery.parseJSON( ''+ msg +'' );
-				$("#txbps").html(obj.interfaceTxBps[interfaceName]);
-				$("#rxbps").html(obj.interfaceRxBps[interfaceName]);
-	
-			},
-			error: function () {
-				alert("Error");
-			}
-
-		});
-
-		url=globalurl+"interface/stats/traffic/pps?interfaceName="+interfaceName;
-		$.ajax({
-			type: "GET",
-			url: url,
-			async:false,
-			success: function(msg){
-				var obj = jQuery.parseJSON( ''+ msg +'' );
-				$("#txpps").html(obj.interfaceTxPps[interfaceName]);
-				$("#rxpps").html(obj.interfaceRxPps[interfaceName]);
-			},
-			error: function () {
-				alert("Error");
-			}
-
-		});
-
-		url=globalurl+"interface/stats/traffic/pktdrop?interfaceName="+interfaceName;
-		$.ajax({
-			type: "GET",
-			url: url,
-			async:false,
-			success: function(msg){
-				var obj = jQuery.parseJSON( ''+ msg +'' );
-				$("#txdroppkt").html(obj.interfaceTxDrpPckt[interfaceName]);
-				$("#rxdroppkt").html(obj.interfaceRxDrpPckt[interfaceName]);
-			},
-			error: function () {
-				alert("Error");
-			}
-
-		});}, 1000);
+			update();
+		}
 	}
+
+	var updateIntervalTxDropPckt = 3000;
+	$("#updateIntervalTxDropPckt").val(updateIntervalTxDropPckt).change(function () {
+		var v = $(this).val();
+		if (v && !isNaN(+v)) {
+			updateIntervalTxDropPckt = +v;
+			if (updateIntervalTxDropPckt < 1)
+				updateIntervalTxDropPckt = 1;
+			if (updateIntervalTxDropPckt > 5000)
+				updateIntervalTxDropPckt = 5000;
+			$(this).val("" + updateIntervalTxDropPckt);
+		}
+
+	});
+
+
+	function generateRxDropChart(interfaceName)
+	{
+
+		//alert("generateLatencyChart");
+
+		function getRxDropData() {
+
+			var result = [];
+
+
+			for (var i = 0; i < rxDropData.length; ++i)
+				result.push([i, rxDropData[i]])
+				return result;
+		}
+
+
+		if($("#rxDropPcktChart").length)
+		{
+			var options = {
+					series: { shadowSize: 1 },
+					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
+					yaxis: { min: 2000000, max: 7000000 },
+					xaxis: { show: false },
+					colors: ["#B87FED"],
+					grid: {	tickColor: "#dddddd",
+						borderWidth: 0 
+					},
+			};
+			var plot = $.plot($("#rxDropPcktChart"), [ getRxDropData() ], options);
+			function update() {
+				//alert("In Update");
+				plot.setData([ getRxDropData() ]);
+				// since the axes don't change, we don't need to call plot.setupGrid()
+				plot.draw();
+				setTimeout(update, updateIntervalRxDropPckt);
+			}
+
+			update();
+		}
+	}
+
+	var updateIntervalRxDropPckt = 3000;
+	$("#updateIntervalRxDropPckt").val(updateIntervalRxDropPckt).change(function () {
+		var v = $(this).val();
+		if (v && !isNaN(+v)) {
+			updateIntervalRxDropPckt = +v;
+			if (updateIntervalRxDropPckt < 1)
+				updateIntervalRxDropPckt = 1;
+			if (updateIntervalRxDropPckt > 5000)
+				updateIntervalRxDropPckt = 5000;
+			$(this).val("" + updateIntervalRxDropPckt);
+		}
+
+	});
+
+
+
+	var txData = [];
+	var rxData = [];
+	function generateTxChart(interfaceName)
+	{
+
+
+		function getTxData() {
+			var url = globalurl+"interface/stats/traffic/graphpckts?interfaceName="+interfaceName;
+			$.ajax({
+				type: "GET",
+				url: url,
+				async : false,
+				success: function(msg){
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					var html= "";
+					txData = obj.interfaceTxPckts;
+					rxData = obj.interfaceRxPckts;
+
+				},
+				error: function () {
+					alert("Error");
+				}
+			});
+
+			var result = [];
+
+			for (var i = 0; i < txData.length; ++i)
+				result.push([i, txData[i]])
+				return result;
+		}
+
+		if($("#txPacketsChart").length)
+		{
+			var options = {
+					series: { shadowSize: 1 },
+					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
+					yaxis: { min: 100000, max: 6000000 },
+					xaxis: { show: false },
+					colors: ["#B87FED"],
+					grid: {	tickColor: "#dddddd",
+						borderWidth: 0 
+					},
+			};
+			var plot = $.plot($("#txPacketsChart"), [ getTxData() ], options);
+			function update() {
+				//alert("In Update");
+				plot.setData([ getTxData() ]);
+				// since the axes don't change, we don't need to call plot.setupGrid()
+				plot.draw();
+				setTimeout(update, updateIntervalTxPackets);
+			}
+
+			update();
+		}
+	}
+
+	var updateIntervalTxPackets = 3000;
+	$("#updateIntervalTxPackets").val(updateIntervalTxPackets).change(function () {
+		var v = $(this).val();
+		if (v && !isNaN(+v)) {
+			updateIntervalTxPackets = +v;
+			if (updateIntervalTxPackets < 1)
+				updateIntervalTxPackets = 1;
+			if (updateIntervalTxPackets > 5000)
+				updateIntervalTxPackets = 5000;
+			$(this).val("" + updateIntervalTxPackets);
+		}
+
+	});
+
+
+	function generateRxChart(interfaceName)
+	{
+
+		//alert("generateLatencyChart");
+
+		function getRxData() {
+
+			var result = [];
+
+
+			for (var i = 0; i < rxData.length; ++i)
+				result.push([i, rxData[i]])
+			console.log(result);
+				return result;
+		}
+
+
+		if($("#rxPacketsChart").length)
+		{
+			var options = {
+					series: { shadowSize: 1 },
+					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
+					yaxis: { min: 10000000, max: 800000000 },
+					xaxis: { show: false },
+					colors: ["#B87FED"],
+					grid: {	tickColor: "#dddddd",
+						borderWidth: 0 
+					},
+			};
+			var plot = $.plot($("#rxPacketsChart"), [ getRxData() ], options);
+			function update() {
+				//alert("In Update");
+				plot.setData([ getRxData() ]);
+				// since the axes don't change, we don't need to call plot.setupGrid()
+				plot.draw();
+				setTimeout(update, updateIntervalRxPackets);
+			}
+
+			update();
+		}
+	}
+
+	var updateIntervalRxPackets = 3000;
+	$("#updateIntervalRxDropPckt").val(updateIntervalRxPackets).change(function () {
+		var v = $(this).val();
+		if (v && !isNaN(+v)) {
+			updateIntervalRxPackets = +v;
+			if (updateIntervalRxPackets < 1)
+				updateIntervalRxPackets = 1;
+			if (updateIntervalRxPackets > 5000)
+				updateIntervalRxPackets = 5000;
+			$(this).val("" + updateIntervalRxPackets);
+		}
+
+	});
+
 
 
 	function getInterfaceList(deviceName)
@@ -174,16 +432,17 @@ $(document).ready(function () {
 					clearInterval(intervalId2);
 					clearInterval(intervalId3);
 					clearInterval(intervalId4);
+					clearInterval(intervalId5);
 					$("#txndroppkt").empty();
 					$("#rxndroppkt").empty();
 					$("#rxcrc").empty();
 					$("#totalrxcrc").empty();
-					
+
 					$("#txpkt").empty();
 					$("#rxpkt").empty();
 					$("#txbps").empty();
 					$("#rxbps").empty();
-					
+
 					$("#txpps").empty();
 					$("#rxpps").empty();
 					$("#txdroppkt").empty();
@@ -195,6 +454,10 @@ $(document).ready(function () {
 					getRxCRCError($(this).val());
 					getTotalRxCRCError($(this).val());
 					generateBoxCharts($(this).val());
+					generateTxDropChart($(this).val());
+					generateRxDropChart($(this).val());
+					generateTxChart($(this).val());
+					generateRxChart($(this).val());
 						});
 
 			},
@@ -241,7 +504,7 @@ $(document).ready(function () {
 
 
 
-	//get device information
+//	get device information
 	function getDeviceInformation(deviceNum)
 	{
 		var url = globalurl+"device?deviceName="+deviceNum;
@@ -275,7 +538,7 @@ $(document).ready(function () {
 		});
 	}
 
-	//get interface information
+//	get interface information
 	function getInterfaceInfo(deviceNum,interfaceNum)
 	{
 		var url = globalurl+"device/interface?deviceName="+deviceNum+"&interfaceName="+interfaceNum;
@@ -310,7 +573,6 @@ $(document).ready(function () {
 			}
 
 		});
-
-
 	}
+
 });

@@ -226,7 +226,7 @@
 				<div class="box span12">
 					<div class="box-header">
 						<h2>
-							<i class="halflings-icon white list-alt"></i><span class="break"></span>Latency
+							<i class="halflings-icon white list-alt"></i><span class="break"></span>Transmitted Drop Packets
 						</h2>
 						<div class="box-icon">
 							<a href="#" class="btn-minimize"><i
@@ -234,9 +234,9 @@
 						</div>
 					</div>
 					<div class="box-content">
-						<div id="Chart" style="height: 190px;"></div>
+						<div id="txDropPcktChart" style="height: 190px;"></div>
 						<p>
-							Time between updates: <input id="updateIntervalLatency"
+							Time between updates: <input id="updateIntervalTxDropPckt"
 								type="text" value="" style="text-align: right; width: 5em">
 							milliseconds
 						</p>
@@ -248,7 +248,7 @@
 				<div class="box span12">
 					<div class="box-header">
 						<h2>
-							<i class="halflings-icon white list-alt"></i><span class="break"></span>Latency
+							<i class="halflings-icon white list-alt"></i><span class="break"></span>Recieved Drop Packets 
 						</h2>
 						<div class="box-icon">
 							<a href="#" class="btn-minimize"><i
@@ -256,9 +256,53 @@
 						</div>
 					</div>
 					<div class="box-content">
-						<div id="latencyChart" style="height: 190px;"></div>
+						<div id="rxDropPcktChart" style="height: 190px;"></div>
 						<p>
-							Time between updates: <input id="updateIntervalLatency"
+							Time between updates: <input id="updateIntervalRxDropPckt"
+								type="text" value="" style="text-align: right; width: 5em">
+							milliseconds
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2>
+							<i class="halflings-icon white list-alt"></i><span class="break"></span>Transmitted Packets
+						</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-minimize"><i
+								class="halflings-icon white chevron-up"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<div id="txPacketsChart" style="height: 190px;"></div>
+						<p>
+							Time between updates: <input id="updateIntervalTxPackets"
+								type="text" value="" style="text-align: right; width: 5em">
+							milliseconds
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2>
+							<i class="halflings-icon white list-alt"></i><span class="break"></span>Received Packets
+						</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-minimize"><i
+								class="halflings-icon white chevron-up"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<div id="rxPacketsChart" style="height: 190px;"></div>
+						<p>
+							Time between updates: <input id="updateIntervalRxPackets"
 								type="text" value="" style="text-align: right; width: 5em">
 							milliseconds
 						</p>
@@ -350,7 +394,6 @@
 
 	<script src="./JuniperDashboard/js/retina.js"></script>
 
-	<script src="./JuniperDashboard/js/custom.js"></script>
 	<!-- end: JavaScript-->
 
 </body>

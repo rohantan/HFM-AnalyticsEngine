@@ -53,7 +53,7 @@
 									Queue Stats</span></a></li>
 						<li><a href="./trafficstats.html"><i
 								class="icon-list-alt"></i><span class="hidden-tablet">
-									Traffic Stats</span></a></li>
+									TrafficStats</span></a></li>
 					</ul>
 				</div>
 			</div>
@@ -151,12 +151,14 @@
 
 					</div>
 					<div class="span3 statbox green" onTablet="span6" onDesktop="span3">
+						
 						<div class="number" id="qmin"></div>
 						<div class="title">Min</div>
 
 					</div>
 					<div class="span3 statbox blue noMargin" onTablet="span6"
 						onDesktop="span3">
+					
 						<div class="number" id="qavg">
 							
 						</div>
@@ -165,6 +167,7 @@
 					</div>
 					<div class="span3 statbox yellow" onTablet="span6"
 						onDesktop="span3">
+					
 						<div class="number" id="qcurr"></div>
 						<div class="title">Current</div>
 					</div>
@@ -173,12 +176,12 @@
 
 				<div class="row-fluid">
 
-					<div class="span8 widget blue" onTablet="span7" onDesktop="span8">
+					<div class="span12 widget blue" onTablet="span7" onDesktop="span12">
 
-						<div id="stats-chart2"></div>
+						<div id="stats-chart2" style="height: 282px"></div>
 
 					</div>
-
+					<!-- End .sparkStats -->
 
 				</div>
 
@@ -196,6 +199,7 @@
 						</div>
 						<div class="box-content">
 							<div id="qDepthChart" style="height: 190px;"></div>
+
 							<p>
 								Time between updates: <input id="updateInterval" type="text"
 									value="" style="text-align: right; width: 5em">
@@ -227,6 +231,111 @@
 					</div>
 				</div>
 
+				
+
+				<div class="row-fluid hideInIE8 circleStats">
+
+					<div class="span2" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox yellow">
+							<div class="header">Disk Space Usage</div>
+							<span class="percent">percent</span>
+							<div class="circleStat">
+								<input type="text" value="58" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">20000</span> <span
+									class="unit">MB</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">50000</span> <span class="unit">MB</span>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="span2" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox green">
+							<div class="header">Bandwidth</div>
+							<span class="percent">percent</span>
+							<div class="circleStat">
+								<input type="text" value="78" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">5000</span> <span
+									class="unit">GB</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">5000</span> <span class="unit">GB</span>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="span2" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox red">
+							<div class="header">Memory</div>
+							<span class="percent">percent</span>
+							<div class="circleStat">
+								<input type="text" value="100" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">64</span> <span
+									class="unit">GB</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">64</span> <span class="unit">GB</span>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="span2 noMargin" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox pink">
+							<div class="header">CPU</div>
+							<span class="percent">percent</span>
+							<deiv class="circleStat">
+								<input type="text" value="83" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">64</span> <span
+									class="unit">GHz</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">3.2</span> <span class="unit">GHz</span>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="span2" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox blue">
+							<div class="header">Memory</div>
+							<span class="percent">percent</span>
+							<div class="circleStat">
+								<input type="text" value="100" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">64</span> <span
+									class="unit">GB</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">64</span> <span class="unit">GB</span>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="span2" onTablet="span4" onDesktop="span2">
+						<div class="circleStatsItemBox green">
+							<div class="header">Memory</div>
+							<span class="percent">percent</span>
+							<div class="circleStat">
+								<input type="text" value="100" class="whiteCircle" />
+							</div>
+							<div class="footer">
+								<span class="count"> <span class="number">64</span> <span
+									class="unit">GB</span>
+								</span> <span class="sep"> / </span> <span class="value"> <span
+									class="number">64</span> <span class="unit">GB</span>
+								</span>
+							</div>
+						</div>
+					</div>
 
 				</div>
 			</div>
@@ -313,7 +422,6 @@
 
 	<script src="./JuniperDashboard/js/retina.js"></script>
 
-	<script src="./JuniperDashboard/js/custom.js"></script>
 	<!-- end: JavaScript-->
 
 </body>

@@ -49,16 +49,84 @@ import java.util.List;
 
 public class JavaTrafficReceiver extends Receiver<AnRecord> {
 
+	private static final int NOOFPARTS=9;
+	private static List<String> crcval= new ArrayList<String>();
+	
 	public static final Logger logger = LoggerFactory.getLogger(JavaTrafficReceiver.class);
 	private static HashMap<String, List<Long>> interfaceTxPcktDrpHM=new HashMap<String, List<Long>>();
 	private static HashMap<String, List<Long>> interfaceRxPcktDrpHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceTxPpsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceRxPpsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceTxBpsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceRxBpsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceTxPcktsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceRxPcktsHM=new HashMap<String, List<Long>>();
+	private static HashMap<String, List<Long>> interfaceRxCrcErrHM=new HashMap<String, List<Long>>();
+
 	public static HashMap<String, Analytics.System> deviceInfo = new HashMap<String, Analytics.System>();
 	public static HashMap<String, Interface> interfaceInfo = new HashMap<String, Interface>();
 	static HashMap<String, ArrayList<Long>> interfaceQueueStats = new HashMap<String, ArrayList<Long>>();
 	static ArrayList<String> deviceMapping = new ArrayList<String>();
 	static ArrayList<String> interfaceMapping = new ArrayList<String>();
+
 	private static HashMap<String, Long> interfacePerTxDrpPcktHM = new HashMap<String, Long>();
 	private static HashMap<String, Long> interfacePerRxDrpPcktHM = new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerTxPktPerSecHM = new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerRxPktPerSecHM = new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerTxBytPerSecHM= new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerRxBytPerSecHM= new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerTxPktsHM= new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerRxPktsHM= new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerRxCrcErrHM= new HashMap<String, Long>();
+	private static HashMap<String, Long> interfacePerRxTotalCrcErrHM= new HashMap<String, Long>();
+
+	public static HashMap<String, Long> getInterfacePerRxTotalCrcErrHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerRxTotalCrcErrHM.get(interfaceName));
+		return tempHM;
+	}
+	
+	public static HashMap<String, Long> getInterfacePerRxCrcErrHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerRxCrcErrHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerTxPktsHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerTxPktsHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerRxPktsHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerRxPktsHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerTxBytPerSecHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerTxBytPerSecHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerRxBytPerSecHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerRxBytPerSecHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerTxPktPerSecHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerTxPktPerSecHM.get(interfaceName));
+		return tempHM;
+	}
+
+	public static HashMap<String, Long> getInterfacePerRxPktPerSecHM(String interfaceName) {
+		HashMap<String,Long> tempHM= new HashMap<String,Long>();
+		tempHM.put(interfaceName,interfacePerRxPktPerSecHM.get(interfaceName));
+		return tempHM;
+	}
 
 	public static HashMap<String, Long> getInterfacePerTxDrpPcktHM(String interfaceName) {
 		HashMap<String,Long> tempHM= new HashMap<String,Long>();
@@ -71,6 +139,8 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		tempHM.put(interfaceName, interfacePerRxDrpPcktHM.get(interfaceName));
 		return tempHM;
 	}
+
+
 
 	public static void startServer() {
 		// Create a local StreamingContext with two working thread and batch interval of 1 second
@@ -89,15 +159,57 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 								if(null==interfaceTxPcktDrpHM && null==interfaceRxPcktDrpHM){
 									List<Long> tempTxLs=new ArrayList<Long>();
 									List<Long> tempRxLs=new ArrayList<Long>();
+
 									tempTxLs.add(a.getInterface(i).getStats().getTrafficStats().getTxdroppkt());
 									interfaceTxPcktDrpHM.put(a.getInterface(i).getName(), tempTxLs);
 									tempRxLs.add(a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
 									interfaceRxPcktDrpHM.put(a.getInterface(i).getName(), tempRxLs);
+
+									List<Long> tempTxPpsLs=new ArrayList<Long>();
+									List<Long> tempRxPpsLs=new ArrayList<Long>();
+									tempTxPpsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxpps());
+									interfaceTxPpsHM.put(a.getInterface(i).getName(), tempTxPpsLs);
+									tempRxPpsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxpps());
+									interfaceRxPpsHM.put(a.getInterface(i).getName(), tempRxPpsLs);
+
+									List<Long> tempTxBpsLs=new ArrayList<Long>();
+									List<Long> tempRxBpsLs=new ArrayList<Long>();
+									tempTxBpsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxbps());
+									interfaceTxBpsHM.put(a.getInterface(i).getName(), tempTxBpsLs);
+									tempRxBpsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxbps());
+									interfaceRxBpsHM.put(a.getInterface(i).getName(), tempRxBpsLs);
+
+									List<Long> tempTxPktsLs=new ArrayList<Long>();
+									List<Long> tempRxPktsLs=new ArrayList<Long>();
+									tempTxPktsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxpkt());
+									interfaceTxPcktsHM.put(a.getInterface(i).getName(), tempTxPktsLs);
+									tempRxPktsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxpkt());
+									interfaceRxPcktsHM.put(a.getInterface(i).getName(), tempRxPktsLs);
+
+									List<Long> tempRxCrcErrLs=new ArrayList<Long>();
+									tempRxCrcErrLs.add(a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
+									interfaceRxCrcErrHM.put(a.getInterface(i).getName(), tempRxCrcErrLs);
+
 								}else if(interfaceTxPcktDrpHM.containsKey(a.getInterface(i).getName()) && interfaceRxPcktDrpHM.containsKey(a.getInterface(i).getName())){
 									interfaceTxPcktDrpHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxdroppkt());
 									interfaceRxPcktDrpHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
+									interfaceTxPpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxpps());	
+									interfaceRxPpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxpps());
+									interfaceTxBpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxbps());	
+									interfaceRxBpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxbps());
+									interfaceTxPcktsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxpkt());	
+									interfaceRxPcktsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxpkt());
+									interfaceRxCrcErrHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 								}
-								val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
+								val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpps()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpps()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxbps()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxbps()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpkt()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpkt()+";"
+										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 							}
 						}
 					}
@@ -111,7 +223,7 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		JavaPairDStream<String, Long> TxDropPktsCounts = words.mapToPair(
 				new PairFunction<String, String, Long>() {
 					public Tuple2<String, Long> call(String s) {
-						String tempAr[]=s.split(";",2);
+						String tempAr[]=s.split(";",NOOFPARTS);
 						String tempTxAr[]=tempAr[0].split(",",2);
 						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
 					}
@@ -138,8 +250,8 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		JavaPairDStream<String, Long> RxDropPktsCounts = words.mapToPair(
 				new PairFunction<String, String, Long>() {
 					public Tuple2<String, Long> call(String s) {
-						String tempAr[]=s.split(";",2);
-						String tempTxAr[]=tempAr[0].split(",",2);
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[1].split(",",2);
 						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
 					}
 				}).reduceByKey(new Function2<Long, Long, Long>() {
@@ -155,6 +267,239 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 						for (Tuple2<String, Long> t: rdd.collect()) {
 							logger.warn("Rx Drop Packets  -> " + t._1() + ": " + t._2());
 							interfacePerRxDrpPcktHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+
+		//map-reduce for TxPps
+		JavaPairDStream<String, Long> TxPpsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[2].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerTxPktPerSecHM)
+		TxPpsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Tx Packets Per Sec -> " + t._1() + ": " + t._2());
+							interfacePerTxPktPerSecHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		//map-reduce for RxPps
+		JavaPairDStream<String, Long> RxPpsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[3].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerRxPktPerSecHM)
+		RxPpsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Rx Packets Per Sec -> " + t._1() + ": " + t._2());
+							interfacePerRxPktPerSecHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		//map-reduce for TxBps
+		JavaPairDStream<String, Long> TxBpsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[4].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerTxBytPerSecHM)
+		TxBpsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Tx Bytes Per Sec -> " + t._1() + ": " + t._2());
+							interfacePerTxBytPerSecHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		//map-reduce for RxBps
+		JavaPairDStream<String, Long> RxBpsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[5].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerRxBytPerSecHM)
+		RxBpsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Rx Bytes Per Sec -> " + t._1() + ": " + t._2());
+							interfacePerRxBytPerSecHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+
+		//map-reduce for TxPckts
+		JavaPairDStream<String, Long> TxPcktsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[6].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerTxPktsHM)
+		TxPcktsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Tx Packets -> " + t._1() + ": " + t._2());
+							interfacePerTxPktsHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		//map-reduce for RxPckts
+		JavaPairDStream<String, Long> RxPcktsCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[7].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerRxPktsHM)
+		RxPcktsCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Rx Packets -> " + t._1() + ": " + t._2());
+							interfacePerRxPktsHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		//map-reduce for RxCrcErr
+		JavaPairDStream<String, Long> RxCrcErrCounts = words.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(";",NOOFPARTS);
+						String tempTxAr[]=tempAr[8].split(",",2);
+						return new Tuple2<String, Long>(tempTxAr[0], Long.parseLong(tempTxAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerRxCrcErrHM)
+		RxCrcErrCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Rx Crc Errors -> " + t._1() + ": " + t._2());
+							interfacePerRxCrcErrHM.put(t._1(), t._2());
+						}
+						return null;
+					}
+				}
+				);
+
+		JavaDStream<String> totalcrcerrors = lines.flatMap(new FlatMapFunction<AnRecord, String>() {
+			public Iterable<String> call(AnRecord a) {
+				if(a.getInterfaceCount()>0){
+					for(int i=0;i<a.getInterfaceCount();i++){
+						if(a.getInterface(i).hasStats()){
+							if(a.getInterface(i).getStats().getTrafficStats().hasRxcrcerr()){
+								crcval.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
+							}
+						}
+					}
+					return crcval;
+				}
+				return null;
+			}
+		});		
+
+		//map-reduce for TotalRxCrcErr
+		JavaPairDStream<String, Long> RxTotalCrcErrCounts = totalcrcerrors.mapToPair(
+				new PairFunction<String, String, Long>() {
+					public Tuple2<String, Long> call(String s) {
+						String tempAr[]=s.split(",",2);
+						return new Tuple2<String, Long>(tempAr[0], Long.parseLong(tempAr[1]));
+					}
+				}).reduceByKey(new Function2<Long, Long, Long>() {
+					public Long call(Long i1, Long i2) {
+						return i1 + i2;
+					}
+				});
+
+		//iterating and storing the result in hashmap (interfacePerRxTotalCrcErrHM)
+		RxTotalCrcErrCounts.foreachRDD(
+				new Function<JavaPairRDD<String, Long>, Void> () {
+					public Void call(JavaPairRDD<String, Long> rdd) {
+						for (Tuple2<String, Long> t: rdd.collect()) {
+							logger.warn("Total Rx Crc Errors -> " + t._1() + ": " + t._2());
+							interfacePerRxTotalCrcErrHM.put(t._1(), t._2());
 						}
 						return null;
 					}

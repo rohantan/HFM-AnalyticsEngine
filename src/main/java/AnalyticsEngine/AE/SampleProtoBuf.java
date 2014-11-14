@@ -1,7 +1,7 @@
 package AnalyticsEngine.AE;
 
 
-/*import java.io.DataInputStream;
+import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,17 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import analytics.Analytics.AnRecord;
 
-import com.google.protobuf.CodedInputStream;*/
+import com.google.protobuf.CodedInputStream;
 
 
 public class SampleProtoBuf {
-	public static void main(String[] args) {/*
+	public static void main(String[] args) {
 		try {
 			Logger logger = LoggerFactory.getLogger(SampleProtoBuf.class);
 			
 			 ServerSocket echoServer = null;
 			 Socket clientSocket = null;
-			 echoServer = new ServerSocket(50005);
+			 echoServer = new ServerSocket(50006);
 			 clientSocket = echoServer.accept();
 			 
 			 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
@@ -49,12 +49,13 @@ public class SampleProtoBuf {
 		                    codedIn = CodedInputStream.newInstance(tmp);
 		                System.out.println("###########SIZE############## "+size);
 		                AnRecord anRecord = AnRecord.parseFrom(codedIn);
-		                if(!anRecord.hasSystem()){
+		                logger.info(anRecord.toString());
+		                /*if(!anRecord.hasSystem()){
 		                	logger.info(anRecord.toString());
 		                }
 		                else{
 		                	logger.info("non System data!!!!");
-		                }
+		                }*/
 		                // ... do stuff
 		            }
 		            catch (final EOFException e) {
@@ -63,11 +64,9 @@ public class SampleProtoBuf {
 			 
 		        }
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	*/}
+	}
 }

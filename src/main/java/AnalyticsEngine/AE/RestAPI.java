@@ -73,6 +73,12 @@ public class RestAPI {
 	}
 
 	@GET
+	@Path("/device/stats/queue/topInterfaces")
+	public String fetchTopInterfaceQueueStats(@QueryParam ("deviceName") String deviceName){
+		return JavaQueueReceiver.getTopInterfacesLatencyInfo(deviceName);
+	}
+	
+	@GET
 	@Path("/interface/stats/traffic/pktdrop")
 	public String fetchInterfaceTrafficStatPktDrop(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
 		interfaceName=interfaceName.replaceAll("\\\\", "");

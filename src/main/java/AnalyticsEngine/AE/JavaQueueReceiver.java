@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +48,7 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	static HashMap<String, ArrayList<Long>> interfaceQueueStats = new HashMap<String, ArrayList<Long>>();
 	public static HashMap<String, HashMap<Integer, Long>> interfaceQueueStatsInfo = new HashMap<String, HashMap<Integer, Long>>();
 	public static HashMap<String, HashMap<Integer, Double>> interfaceLatencyStatsInfo = new HashMap<String, HashMap<Integer, Double>>();
+	public static LinkedHashMap<String, Double> interfaceTopLatencyStatsInfo = new LinkedHashMap<String, Double>();
 	
 	public static HashMap<String, ArrayList<Long>> interfaceQueueStatsChart1 = new HashMap<String, ArrayList<Long>>();
 	public static HashMap<String, ArrayList<Long>> interfaceQueueAvgStatsChart1 = new HashMap<String, ArrayList<Long>>();
@@ -134,9 +136,6 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 						return i2;
 				}
 			});
-		
-		// Print the first ten elements of each RDD generated in this DStream to the console
-		//maxStatsPerInterface.print();
 		
 		maxStatsPerInterface.foreachRDD(
 			new Function<JavaPairRDD<String, Long>, Void> () {
@@ -236,6 +235,45 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 			}
 		);
 		
+		
+		/*JavaPairDStream<String, Long> counts = interfacePairs.reduceByKeyAndWindow(
+	      new Function2<Long, Long, Long>() {
+	        public Long call(Long i1, Long i2) { return i1 + i2; }
+	      },
+	      new Function2<Long, Long, Long>() {
+	        public Long call(Long i1, Long i2) { return i1 - i2; }
+	      },
+	      new Duration(60 * 5 * 1000),
+	      new Duration(1 * 1000)
+	    );*/
+		
+		JavaPairDStream<Long, String> swappedCounts = maxStatsPerInterface.mapToPair(
+			     new PairFunction<Tuple2<String, Long>, Long, String>() {
+			       public Tuple2<Long, String> call(Tuple2<String, Long> in) {
+			         return in.swap();
+			       }
+			     }
+			   );
+
+			   JavaPairDStream<Long, String> sortedCounts = swappedCounts.transformToPair(
+			     new Function<JavaPairRDD<Long, String>, JavaPairRDD<Long, String>>() {
+			       public JavaPairRDD<Long, String> call(JavaPairRDD<Long, String> in) throws Exception {
+			         return in.sortByKey(false);
+			       }
+			     });
+
+			   sortedCounts.foreachRDD(
+			     new Function<JavaPairRDD<Long, String>, Void> () {
+			       public Void call(JavaPairRDD<Long, String> rdd) {
+			         String out = "\nTop 10 hashtags:\n";
+			         for (Tuple2<Long, String> t: rdd.take(3)) {
+			        	 interfaceTopLatencyStatsInfo.put(t._2(), calculateDelay(t._1(),interfaceInfo.get(t._2()).getStatus().getLink().getSpeed()));
+			         }
+			        
+			         return null;
+			       }
+			     }
+			   );
 		
 		/*JavaPairDStream<String, Long> currentStatsPerInterface = interfacePairs.reduceByKey(
 		  new Function2<Long, Long, Long>() {
@@ -398,6 +436,16 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 		return jo.toString();
 	}
 	
+	public static String getTopInterfacesLatencyInfo(String deviceName) {
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put("topInterfaces", interfaceTopLatencyStatsInfo);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
 	
 	
 	// ============= Receiver code that receives data over a socket ==============

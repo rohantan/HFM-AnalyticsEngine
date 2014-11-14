@@ -229,8 +229,65 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		return jo.toString();
 	}
 
+	//get continuous graph for pckts
+	public static String getInterfaceTxPcktsHM(String interfaceName) {
+		JSONObject jo = new JSONObject();
+		List<Long> stats = new ArrayList<Long>();
+
+		List<Long> interfaceTxPcktsHMStats = interfaceTxPcktsHM.get(interfaceName);
+		List<Long> interfaceRxPcktsHMStats = interfaceRxPcktsHM.get(interfaceName);
+
+		if(interfaceTxPcktsHM != null) {
+			stats.addAll(interfaceTxPcktsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceTxPckts", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		stats = new ArrayList<Long>();
+		if(interfaceRxPcktsHM != null) {
+			stats.addAll(interfaceRxPcktsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceRxPckts", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+
+	//get continuous graph for crc error
+	public static String getInterfaceRxCrcErrHM(String interfaceName) {
+		JSONObject jo = new JSONObject();
+		List<Long> stats = new ArrayList<Long>();
+
+		List<Long> interfaceRxCrcErrHMStats = interfaceRxCrcErrHM.get(interfaceName);
+
+		if(interfaceRxCrcErrHM != null) {
+			stats.addAll(interfaceRxCrcErrHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceRxCrcErr", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return jo.toString();
+	}
+
 	//get continuous graph for bps
-	public static String getInterfaceTxBpsHM(String interfaceName) {
+	public static String getInterfaceTxbpsHM(String interfaceName) {
 		JSONObject jo = new JSONObject();
 		List<Long> stats = new ArrayList<Long>();
 
@@ -263,8 +320,7 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		}
 		return jo.toString();
 	}
-	
-	
+
 	public static void startServer() {
 		// Create a local StreamingContext with two working thread and batch interval of 1 second
 

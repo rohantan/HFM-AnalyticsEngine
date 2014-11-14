@@ -1,10 +1,152 @@
 var globalurl ="http://localhost:8080/analyticsengine/ae/";
 var selectedInterface='';
 $(document).ready(function () {
-	var intervalId;
+	var intervalId1,intervalId2,intervalId3,intervalId4;
 	var url = globalurl+"devices";
 	//alert(url);
 	var i=0;
+
+	function getDropPackets(interfaceName)
+	{
+		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName="+interfaceName;
+		//alert("In getDropPackets"+url);
+		intervalId1 = setInterval(function(){
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					//alert(msg);
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					var html= "";
+					//alert(obj.interfaceTxTotalDrpPckt[interfaceName]);
+					$("#txndroppkt").html(obj.interfaceTxTotalDrpPckt[interfaceName]);
+					$("#rxndroppkt").html(obj.interfaceRxTotalDrpPckt[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+			});}, 10000);
+
+	}
+
+	function getRxCRCError(interfaceName)
+	{
+		var url = globalurl+"interface/stats/traffic/rxcrcerror?interfaceName="+interfaceName;
+		//alert("In getDropPackets"+url);
+		intervalId2 = setInterval(function(){
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					//alert(msg);
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					var html= "";
+					//alert(obj.interfaceTxTotalDrpPckt[interfaceName]);
+					$("#rxcrc").html(obj.interfaceRxCrcErr[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+			});}, 10000);
+
+	}
+
+	function getTotalRxCRCError(interfaceName)
+	{
+		var url = globalurl+"interface/stats/traffic/rxtotalcrcerror?interfaceName="+interfaceName;
+
+		intervalId3 = setInterval(function(){
+			$.ajax({
+				type: "GET",
+				url: url,
+				async:false,
+				success: function(msg){
+					//alert(msg);
+					var obj = jQuery.parseJSON( ''+ msg +'' );
+					var html= "";
+					//alert(obj.interfaceTxTotalDrpPckt[interfaceName]);
+					$("#totalrxcrc").html(obj.interfaceRxTotalCrcErr[interfaceName]);
+				},
+				error: function () {
+					alert("Error");
+				}
+			});}, 10000);
+
+	}
+
+	// plot Stack graphs
+	function generateBoxCharts(interfaceName)
+	{
+		intervalId4 = setInterval(function(){
+		url=globalurl+"interface/stats/traffic/pckts?interfaceName="+interfaceName;
+		$.ajax({
+			type: "GET",
+			url: url,
+			async:false,
+			success: function(msg){
+				var obj = jQuery.parseJSON( ''+ msg +'' );
+				$("#txpkt").html(obj.interfaceTxPckts[interfaceName]);
+				$("#rxpkt").html(obj.interfaceRxPckts[interfaceName]);
+			},
+			error: function () {
+				alert("Error");
+			}
+
+		});
+
+		url=globalurl+"interface/stats/traffic/bps?interfaceName="+interfaceName;
+		$.ajax({
+			type: "GET",
+			url: url,
+			async:false,
+			success: function(msg){
+				var obj = jQuery.parseJSON( ''+ msg +'' );
+				$("#txbps").html(obj.interfaceTxBps[interfaceName]);
+				$("#rxbps").html(obj.interfaceRxBps[interfaceName]);
+	
+			},
+			error: function () {
+				alert("Error");
+			}
+
+		});
+
+		url=globalurl+"interface/stats/traffic/pps?interfaceName="+interfaceName;
+		$.ajax({
+			type: "GET",
+			url: url,
+			async:false,
+			success: function(msg){
+				var obj = jQuery.parseJSON( ''+ msg +'' );
+				$("#txpps").html(obj.interfaceTxPps[interfaceName]);
+				$("#rxpps").html(obj.interfaceRxPps[interfaceName]);
+			},
+			error: function () {
+				alert("Error");
+			}
+
+		});
+
+		url=globalurl+"interface/stats/traffic/pktdrop?interfaceName="+interfaceName;
+		$.ajax({
+			type: "GET",
+			url: url,
+			async:false,
+			success: function(msg){
+				var obj = jQuery.parseJSON( ''+ msg +'' );
+				$("#txdroppkt").html(obj.interfaceTxDrpPckt[interfaceName]);
+				$("#rxdroppkt").html(obj.interfaceRxDrpPckt[interfaceName]);
+			},
+			error: function () {
+				alert("Error");
+			}
+
+		});}, 1000);
+	}
+
+
 	function getInterfaceList(deviceName)
 	{
 		var url = globalurl+"device/interfaces?deviceName="+deviceName;
@@ -28,16 +170,31 @@ $(document).ready(function () {
 				$(options).appendTo($("#selectInterface"));
 				$('#selectInterface').bind('change', function()
 						{ 
-					clearInterval(intervalId);
+					clearInterval(intervalId1);
+					clearInterval(intervalId2);
+					clearInterval(intervalId3);
+					clearInterval(intervalId4);
 					$("#txndroppkt").empty();
 					$("#rxndroppkt").empty();
 					$("#rxcrc").empty();
 					$("#totalrxcrc").empty();
+					
+					$("#txpkt").empty();
+					$("#rxpkt").empty();
+					$("#txbps").empty();
+					$("#rxbps").empty();
+					
+					$("#txpps").empty();
+					$("#rxpps").empty();
+					$("#txdroppkt").empty();
+					$("#rxdroppkt").empty();
 					selectedInterface = $(this).val();
 					//alert(selectedInterface);
 					getInterfaceInfo(deviceName,$(this).val());
 					getDropPackets($(this).val());
-
+					getRxCRCError($(this).val());
+					getTotalRxCRCError($(this).val());
+					generateBoxCharts($(this).val());
 						});
 
 			},
@@ -154,29 +311,6 @@ $(document).ready(function () {
 
 		});
 
-		//box values
-
-		function getDropPackets(interfaceName)
-		{
-			var url = globalurl+"/interface/stats/traffic/totalpktdrop?interfaceName="+interfaceName;
-			alert("In getDropPackets"+url);
-			intervalId = setInterval(function(){
-				$.ajax({
-					type: "GET",
-					url: url,
-					async:false,
-					success: function(msg){
-						var obj = jQuery.parseJSON( ''+ msg +'' );
-						var html= "";
-						$("#txndroppkt").html(obj.);
-						$("#rxndroppkt").html(obj.Minimum);
-					},
-					error: function () {
-						alert("Error");
-					}
-				});}, 10000);
-
-		}
 
 	}
 });

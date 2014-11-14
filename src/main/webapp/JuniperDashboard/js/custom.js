@@ -1530,7 +1530,7 @@ function charts() {
 	}
 	
 	/* ---------- Stack chart ---------- */
-	if($("#stackchart").length)
+	/*if($("#stackchart").length)
 	{
 		var d1 = [];
 		for (var i = 0; i <= 10; i += 1)
@@ -1571,7 +1571,7 @@ function charts() {
 			steps = $(this).val().indexOf("steps") != -1;
 			plotWithOptions();
 		});
-	}
+	}*/
 	
 	/* ---------- Device chart ---------- */
 	

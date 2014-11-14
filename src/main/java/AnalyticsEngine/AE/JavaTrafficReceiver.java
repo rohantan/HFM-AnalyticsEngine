@@ -19,6 +19,8 @@ import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.receiver.Receiver;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,7 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 	private static List<String> crcval= new ArrayList<String>();
 	private static List<String> totaltxdrpval= new ArrayList<String>();
 	private static List<String> totalrxdrpval= new ArrayList<String>();
+	private static boolean flag=false;
 
 	public static final Logger logger = LoggerFactory.getLogger(JavaTrafficReceiver.class);
 	private static HashMap<String, List<Long>> interfaceTxPcktDrpHM=new HashMap<String, List<Long>>();
@@ -156,8 +159,112 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 		return tempHM;
 	}
 
+	//get continuous graph for pckt drops
+	public static String getInterfaceTxPcktDrpHM(String interfaceName) {
+		JSONObject jo = new JSONObject();
+		List<Long> stats = new ArrayList<Long>();
 
+		List<Long> interfaceTxPcktDrpStats = interfaceTxPcktDrpHM.get(interfaceName);
+		List<Long> interfaceRxPcktDrpStats = interfaceRxPcktDrpHM.get(interfaceName);
 
+		if(interfaceTxPcktDrpStats != null) {
+			stats.addAll(interfaceTxPcktDrpStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceTxDrpPckt", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		stats = new ArrayList<Long>();
+		if(interfaceRxPcktDrpStats != null) {
+			stats.addAll(interfaceRxPcktDrpStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceRxDrpPckt", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+
+	//get continuous graph for pps
+	public static String getInterfaceTxPpsHM(String interfaceName) {
+		JSONObject jo = new JSONObject();
+		List<Long> stats = new ArrayList<Long>();
+
+		List<Long> interfaceTxPpsHMStats = interfaceTxPpsHM.get(interfaceName);
+		List<Long> interfaceRxPpsHMStats = interfaceRxPpsHM.get(interfaceName);
+
+		if(interfaceTxPpsHM != null) {
+			stats.addAll(interfaceTxPpsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceTxPps", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		stats = new ArrayList<Long>();
+		if(interfaceRxPpsHM != null) {
+			stats.addAll(interfaceRxPpsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceRxPps", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+
+	//get continuous graph for bps
+	public static String getInterfaceTxBpsHM(String interfaceName) {
+		JSONObject jo = new JSONObject();
+		List<Long> stats = new ArrayList<Long>();
+
+		List<Long> interfaceTxBpsHMStats = interfaceTxBpsHM.get(interfaceName);
+		List<Long> interfaceRxBpsHMStats = interfaceRxBpsHM.get(interfaceName);
+
+		if(interfaceTxBpsHM != null) {
+			stats.addAll(interfaceTxBpsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceTxBps", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		stats = new ArrayList<Long>();
+		if(interfaceRxBpsHM != null) {
+			stats.addAll(interfaceRxBpsHMStats);
+			for(int i=stats.size();i<300;i++) {
+				stats.add(0l);
+			}
+		}
+		try {
+			jo.put("interfaceRxBps", stats);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return jo.toString();
+	}
+	
+	
 	public static void startServer() {
 		// Create a local StreamingContext with two working thread and batch interval of 1 second
 
@@ -167,69 +274,80 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 				new JavaTrafficReceiver("127.0.0.1", 50006));
 		JavaDStream<String> words = lines.flatMap(new FlatMapFunction<AnRecord, String>() {
 			public Iterable<String> call(AnRecord a) {
-				if(a.getInterfaceCount()>0){
-					List<String> val= new ArrayList<String>();
-					for(int i=0;i<a.getInterfaceCount();i++){
-						if(a.getInterface(i).hasStats()){
-							if(a.getInterface(i).getStats().getTrafficStats().hasTxdroppkt()){
-								if(null==interfaceTxPcktDrpHM && null==interfaceRxPcktDrpHM){
-									List<Long> tempTxLs=new ArrayList<Long>();
-									List<Long> tempRxLs=new ArrayList<Long>();
-
+				if(flag){
+					flag=false;
+					if(a.getInterfaceCount()>0){
+						List<String> val= new ArrayList<String>();
+						for(int i=0;i<a.getInterfaceCount();i++){
+							if(a.getInterface(i).hasStats()){
+								if(a.getInterface(i).getStats().getTrafficStats().hasTxdroppkt()){
+									List<Long> tempTxLs=interfaceTxPcktDrpHM.get(a.getInterface(i).getName());
+									List<Long> tempRxLs=interfaceRxPcktDrpHM.get(a.getInterface(i).getName());
+									if(null==tempTxLs && null==tempRxLs){
+										tempTxLs=new ArrayList<Long>();
+										tempRxLs=new ArrayList<Long>();
+									}
 									tempTxLs.add(a.getInterface(i).getStats().getTrafficStats().getTxdroppkt());
 									interfaceTxPcktDrpHM.put(a.getInterface(i).getName(), tempTxLs);
 									tempRxLs.add(a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
 									interfaceRxPcktDrpHM.put(a.getInterface(i).getName(), tempRxLs);
 
-									List<Long> tempTxPpsLs=new ArrayList<Long>();
-									List<Long> tempRxPpsLs=new ArrayList<Long>();
+
+
+									List<Long> tempTxPpsLs=interfaceTxPpsHM.get(a.getInterface(i).getName());
+									List<Long> tempRxPpsLs=interfaceRxPpsHM.get(a.getInterface(i).getName());
+									if(null==tempTxPpsLs && null==tempRxPpsLs){
+										tempTxPpsLs=new ArrayList<Long>();
+										tempRxPpsLs=new ArrayList<Long>();
+									}
 									tempTxPpsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxpps());
 									interfaceTxPpsHM.put(a.getInterface(i).getName(), tempTxPpsLs);
 									tempRxPpsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxpps());
 									interfaceRxPpsHM.put(a.getInterface(i).getName(), tempRxPpsLs);
 
-									List<Long> tempTxBpsLs=new ArrayList<Long>();
-									List<Long> tempRxBpsLs=new ArrayList<Long>();
+									List<Long> tempTxBpsLs=interfaceTxBpsHM.get(a.getInterface(i).getName());
+									List<Long> tempRxBpsLs=interfaceRxBpsHM.get(a.getInterface(i).getName());
+									if(null==tempTxBpsLs && null==tempRxBpsLs){
+										tempTxBpsLs=new ArrayList<Long>();
+										tempRxBpsLs=new ArrayList<Long>();
+									}
 									tempTxBpsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxbps());
 									interfaceTxBpsHM.put(a.getInterface(i).getName(), tempTxBpsLs);
 									tempRxBpsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxbps());
 									interfaceRxBpsHM.put(a.getInterface(i).getName(), tempRxBpsLs);
 
-									List<Long> tempTxPktsLs=new ArrayList<Long>();
-									List<Long> tempRxPktsLs=new ArrayList<Long>();
+									List<Long> tempTxPktsLs=interfaceTxPcktsHM.get(a.getInterface(i).getName());
+									List<Long> tempRxPktsLs=interfaceRxPcktsHM.get(a.getInterface(i).getName());
+									if(null==tempTxPktsLs && null==tempRxPktsLs){
+										tempTxPktsLs=new ArrayList<Long>();
+										tempRxPktsLs=new ArrayList<Long>();
+									}
 									tempTxPktsLs.add(a.getInterface(i).getStats().getTrafficStats().getTxpkt());
 									interfaceTxPcktsHM.put(a.getInterface(i).getName(), tempTxPktsLs);
 									tempRxPktsLs.add(a.getInterface(i).getStats().getTrafficStats().getRxpkt());
 									interfaceRxPcktsHM.put(a.getInterface(i).getName(), tempRxPktsLs);
 
-									List<Long> tempRxCrcErrLs=new ArrayList<Long>();
+									List<Long> tempRxCrcErrLs=interfaceRxCrcErrHM.get(a.getInterface(i).getName());
+									if(null==tempRxCrcErrLs){
+										tempRxCrcErrLs=new ArrayList<Long>();
+									}
 									tempRxCrcErrLs.add(a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 									interfaceRxCrcErrHM.put(a.getInterface(i).getName(), tempRxCrcErrLs);
 
-								}else if(interfaceTxPcktDrpHM.containsKey(a.getInterface(i).getName()) && interfaceRxPcktDrpHM.containsKey(a.getInterface(i).getName())){
-									interfaceTxPcktDrpHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxdroppkt());
-									interfaceRxPcktDrpHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxdroppkt());
-									interfaceTxPpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxpps());	
-									interfaceRxPpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxpps());
-									interfaceTxBpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxbps());	
-									interfaceRxBpsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxbps());
-									interfaceTxPcktsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getTxpkt());	
-									interfaceRxPcktsHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxpkt());
-									interfaceRxCrcErrHM.get(a.getInterface(i).getName()).add(a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
+									val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxbps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxbps()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpkt()+";"
+											+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 								}
-								val.add(a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxdroppkt()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxdroppkt()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpps()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpps()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxbps()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxbps()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getTxpkt()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxpkt()+";"
-										+a.getInterface(i).getName()+","+a.getInterface(i).getStats().getTrafficStats().getRxcrcerr());
 							}
 						}
+						return val;
 					}
-					return val;
 				}
 				return null;
 			}
@@ -677,6 +795,7 @@ public class JavaTrafficReceiver extends Receiver<AnRecord> {
 					AnRecord anRecord = AnRecord.parseFrom(codedIn);
 					//					
 					if(anRecord.hasTimestamp()) {
+						flag=true;
 						store(anRecord);
 					} else {
 						if(anRecord.hasSystem()) {

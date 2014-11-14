@@ -83,6 +83,16 @@ public class RestAPI {
 	}
 	
 	@GET
+	@Path("/interface/stats/traffic/graphpktdrop")
+	public String fetchInterfaceTrafficStatGraphPktDrop(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
+		interfaceName=interfaceName.replaceAll("\\\\", "");
+		/*JSONObject jo = new JSONObject();
+		jo.put("interfaceTxDrpPckt", JavaTrafficReceiver.getInterfacePerTxDrpPcktHM(interfaceName));
+		jo.put("interfaceRxDrpPckt", JavaTrafficReceiver.getInterfacePerRxDrpPcktHM(interfaceName));*/
+		return JavaTrafficReceiver.getInterfaceTxPcktDrpHM(interfaceName);
+	}
+	
+	@GET
 	@Path("/interface/stats/traffic/totalpktdrop")
 	public String fetchInterfaceTrafficStatTotalPktDrop(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
 		interfaceName=interfaceName.replaceAll("\\\\", "");
@@ -103,6 +113,16 @@ public class RestAPI {
 	}
 	
 	@GET
+	@Path("/interface/stats/traffic/graphpps")
+	public String fetchInterfaceTrafficStatsGraphPps(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
+		interfaceName=interfaceName.replaceAll("\\\\", "");
+		/*JSONObject jo = new JSONObject();
+		jo.put("interfaceTxPps", JavaTrafficReceiver.getInterfacePerTxPktPerSecHM(interfaceName));
+		jo.put("interfaceRxPps", JavaTrafficReceiver.getInterfacePerRxPktPerSecHM(interfaceName));*/
+		return JavaTrafficReceiver.getInterfaceTxPpsHM(interfaceName);
+	}
+	
+	@GET
 	@Path("/interface/stats/traffic/bps")
 	public String fetchInterfaceTrafficStatsBps(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
 		interfaceName=interfaceName.replaceAll("\\\\", "");
@@ -110,6 +130,16 @@ public class RestAPI {
 		jo.put("interfaceTxBps", JavaTrafficReceiver.getInterfacePerTxBytPerSecHM(interfaceName));
 		jo.put("interfaceRxBps", JavaTrafficReceiver.getInterfacePerRxBytPerSecHM(interfaceName));
 		return jo.toString();
+	}
+	
+	@GET
+	@Path("/interface/stats/traffic/graphbps")
+	public String fetchInterfaceTrafficStatsGraphBps(@QueryParam ("interfaceName") String interfaceName) throws JSONException{
+		interfaceName=interfaceName.replaceAll("\\\\", "");
+		/*JSONObject jo = new JSONObject();
+		jo.put("interfaceTxBps", JavaTrafficReceiver.getInterfacePerTxBytPerSecHM(interfaceName));
+		jo.put("interfaceRxBps", JavaTrafficReceiver.getInterfacePerRxBytPerSecHM(interfaceName));*/
+		return JavaTrafficReceiver.getInterfaceTxPpsHM(interfaceName);
 	}
 	
 	@GET

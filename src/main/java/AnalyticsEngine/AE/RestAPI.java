@@ -1,5 +1,7 @@
 package AnalyticsEngine.AE;
 
+import java.io.IOException;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -23,7 +25,7 @@ public class RestAPI {
 		JavaTrafficReceiver.startServer();
 		return "Hi";
 	}
-
+	
 	@GET
 	@Path("/device")
 	public String fetchDeviceInfo(@QueryParam ("deviceName") String deviceName) throws JSONException{

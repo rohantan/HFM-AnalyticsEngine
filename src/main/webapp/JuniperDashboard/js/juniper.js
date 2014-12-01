@@ -28,6 +28,7 @@ $(document).ready(function () {
 				//alert(selectedInterface);
 				getDeviceInformation($(this).val());
 				getInterfaceList($(this).val());
+				getTopInterfaceStats($(this).val());
 				//generateCurrentQDepthChart(deviceName,$(this).val());
 
 					});
@@ -46,7 +47,23 @@ $(document).ready(function () {
 		}
 	});
 
-
+	function getTopInterfaceStats(deviceName) {
+		var url = globalurl+"device/stats/queue/topInterfaces?deviceName="+deviceName;
+		//alert(url);
+		$.ajax({
+			type: "GET",
+			url: url,
+			async:false,
+			success: function(msg){
+				var obj = jQuery.parseJSON( ''+ msg +'' );
+				$('#intNo1').html(obj.topInterfaces[0]);
+				$('#intNo2').html(obj.topInterfaces[1]);
+				$('#intNo3').html(obj.topInterfaces[2]);
+			}
+		});
+				
+			
+	}
 
 	//get device information
 	function getDeviceInformation(deviceNum)

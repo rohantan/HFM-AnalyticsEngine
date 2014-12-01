@@ -9,7 +9,7 @@ $(document).ready(function () {
 	function getDropPackets(interfaceName)
 	{
 		var url = globalurl+"interface/stats/traffic/totalpktdrop?interfaceName="+interfaceName;
-		alert("In getDropPackets"+url);
+		//alert("In getDropPackets"+url);
 		intervalId1 = setInterval(function(){
 			$.ajax({
 				type: "GET",
@@ -152,7 +152,7 @@ $(document).ready(function () {
 	function generateTxDropChart(interfaceName)
 	{
 
-		alert("In generateTxDropChart");
+		//alert("In generateTxDropChart");
 		function getTxDropData() {
 			var url = globalurl+"interface/stats/traffic/graphpktdrop?interfaceName="+interfaceName;
 			//alert("In generateTxDropChart"+url);
@@ -242,7 +242,7 @@ $(document).ready(function () {
 					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
 					yaxis: { min: 2000000, max: 7000000 },
 					xaxis: { show: false },
-					colors: ["#B87FED"],
+					colors: ["#F4A506"],
 					grid: {	tickColor: "#dddddd",
 						borderWidth: 0 
 					},
@@ -359,7 +359,7 @@ $(document).ready(function () {
 
 			for (var i = 0; i < rxData.length; ++i)
 				result.push([i, rxData[i]])
-			console.log(result);
+			//console.log(result);
 				return result;
 		}
 
@@ -371,7 +371,7 @@ $(document).ready(function () {
 					lines: { fill: true, fillColor: { colors: [ { opacity: 1 }, { opacity: 0.1 } ] }},
 					yaxis: { min: 10000000, max: 800000000 },
 					xaxis: { show: false },
-					colors: ["#B87FED"],
+					colors: ["#F4A506"],
 					grid: {	tickColor: "#dddddd",
 						borderWidth: 0 
 					},
@@ -408,7 +408,7 @@ $(document).ready(function () {
 	function getInterfaceList(deviceName)
 	{
 		var url = globalurl+"device/interfaces?deviceName="+deviceName;
-		alert(url);
+		//alert(url);
 
 		$.ajax({
 			type: "GET",

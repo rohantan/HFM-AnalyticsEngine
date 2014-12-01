@@ -1,4 +1,4 @@
-var globalurl ="http://localhost:8080/analyticsengine/ae/";
+var globalurl ="http://cmpe239instance.cloudapp.net:8080/analyticsengine/ae/";
 var selectedInterface='';
 $(document).ready(function () {
 	var intervalId;

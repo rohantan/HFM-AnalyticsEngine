@@ -1,3 +1,4 @@
+//var globalurl ="http://localhost:8080/analyticsengine/ae/";
 var globalurl ="http://cmpe239instance.cloudapp.net:8080/analyticsengine/ae/";
 var selectedInterface='';
 $(document).ready(function () {
@@ -55,8 +56,10 @@ $(document).ready(function () {
 			url: url,
 			async:false,
 			success: function(msg){
+				alert("msg:"+msg);
 				var obj = jQuery.parseJSON( ''+ msg +'' );
 				$('#intNo1').html(obj.topInterfaces[0]);
+				alert(obj.topInterfaces[0]);
 				$('#intNo2').html(obj.topInterfaces[1]);
 				$('#intNo3').html(obj.topInterfaces[2]);
 			}

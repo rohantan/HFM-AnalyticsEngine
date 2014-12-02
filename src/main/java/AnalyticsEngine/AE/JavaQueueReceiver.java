@@ -438,12 +438,19 @@ public class JavaQueueReceiver extends Receiver<AnRecord> {
 	
 	public static String getTopInterfacesLatencyInfo(String deviceName) {
 		JSONObject jo = new JSONObject();
+		ArrayList<String> topInterface = new ArrayList<String>();
+		Iterator<Entry<String, Double>> it = interfaceTopLatencyStatsInfo.entrySet().iterator();
 		try {
-			jo.put("topInterfaces", interfaceTopLatencyStatsInfo);
+			while (it.hasNext()) {
+		        Map.Entry<String, Double> pairs = (Map.Entry<String, Double>)it.next();
+		        topInterface.add(pairs.getKey()+": "+pairs.getValue());
+			}
+			jo.put("topInterfaces", topInterface);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		return jo.toString();
 	}
 	
